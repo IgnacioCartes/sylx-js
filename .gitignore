@@ -1,0 +1,12 @@
+# .DS_Store Mac OS folder metadata files
+.DS_Store
+
+# NPM related files
+package-lock.json
+node_modules
+
+# Examples (will be included later when they're actually finished examples)
+examples/
+
+# Development files
+devel/

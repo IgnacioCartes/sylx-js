@@ -1,0 +1,21 @@
+{
+    "name": "sylx",
+    "version": "0.5.0",
+    "description": "JavaScript Game Development Framework",
+    "main": "index.js",
+    "directories": {
+        "example": "examples"
+    },
+    "scripts": {
+        "build": "uglifyjs src/sylx.js src/sylx.*.js -o build/sylx.min.js -c -m"
+    },
+    "keywords": [
+    "game",
+    "engine",
+    "game",
+    "development",
+    "javascript"
+  ],
+    "author": "Ignacio Cartes <ignacio.cartes.w@gmail.com>",
+    "license": "MIT"
+}
