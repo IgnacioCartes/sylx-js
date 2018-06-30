@@ -19,10 +19,20 @@ window.Sylx.Scene = (function (window, Sylx, undefined) {
     // Base scene pseudoclass
 
     var baseScenePrototype = Object.assign(Object.create(Sylx.game()), {
+        /**
+         * Adds an already created entity to this scene
+         * @param   {object} entity The created entity object
+         * @returns {object} The entity
+         */
         addEntity: function (entity) {
             this.entities.push(entity);
             return entity;
         },
+        /**
+         * Creates and adds a new entity to the scene
+         * @param   {object} definition The entity definition used to create the entity
+         * @returns {object} The created entity
+         */
         createEntity: function (definition) {
             if (typeof definition === 'string')
                 definition = Sylx.Entity.getDefinitionFromName(definition);
@@ -35,8 +45,13 @@ window.Sylx.Scene = (function (window, Sylx, undefined) {
             this.entities.push(newEntity);
             return newEntity;
         },
+        /**
+         * Checks for all entities in this scene that correspond to a specific definition
+         * @param   {object} definition An entity definition to compare to
+         * @returns {Array}  An array with all entities that correspond to the provided definition
+         */
         getEntitiesByType: function (definition) {
-            // empty pool
+            // empty pool - return an empty array
             if (this.entities.length === 0) return [];
             // definition as string or object?
             var defObject, entitiesByType = [];
@@ -56,11 +71,14 @@ window.Sylx.Scene = (function (window, Sylx, undefined) {
             }
             return entitiesByType;
         },
+        /**
+         * Sets a level (consisting of maps and entities automatically generated)
+         * @param {object} levelObject The level object
+         */
         setLevel: function (levelObject) {
             // mount level data
             this.maps = new Array(levelObject.map.length);
             var index, len;
-
 
             // create new maps
             for (index = 0, len = levelObject.map.length; index < len; index++)
@@ -70,7 +88,6 @@ window.Sylx.Scene = (function (window, Sylx, undefined) {
             for (index = 0, len = levelObject.entities.length; index < len; index++)
                 this.createEntity.apply(this, levelObject.entities[index]);
 
-
         }
     });
 
@@ -79,6 +96,11 @@ window.Sylx.Scene = (function (window, Sylx, undefined) {
     // Exportable object
 
     var $scene = {
+        /**
+         * Creates a new scene
+         * @param   {object} sceneObject Object to create a scene from
+         * @returns {object} A new scene object
+         */
         create: function (sceneObject) {
             // get base scene object
             var newScene = Object.assign(Object.create(baseScenePrototype), sceneObject);
@@ -89,13 +111,28 @@ window.Sylx.Scene = (function (window, Sylx, undefined) {
             Sylx.log("Sylx.Scene: Created new scene", sceneObject.name);
             return newScene;
         },
+        /**
+         * Creates a new named scene
+         * @param   {string} name        Scene name
+         * @param   {object} sceneObject Object to create a scene from
+         * @returns {object} A new scene object
+         */
         createAs: function (name, sceneObject) {
             scenes[name] = this.create(sceneObject);
             return scenes[name];
         },
+        /**
+         * Gets the currently active scene
+         * @returns {object} The current scene object
+         */
         getCurrent: function () {
             return current;
         },
+        /**
+         * Sets a new scene as active
+         * @param   {object} scene The scene to set as active
+         * @returns {object} The new scene
+         */
         set: function (scene) {
             var sceneToSet;
             if (typeof scene === 'object') {

@@ -18,6 +18,11 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
     */
 
     var componentConstructor = {
+        /**
+         * Sprite component constructor
+         * @param   {object} props Props for this component
+         * @returns {object} A new sprite component
+         */
         sprite: function Sprite(props) {
             if (!props) props = {};
             this.position = props.position || (new Sylx.Point());
@@ -30,15 +35,31 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
             this.order = props.order || 0;
             return this;
         },
+        /**
+         * Movement component constructor
+         * @param   {object} props Props for thos component
+         * @returns {object} A new movement component
+         */
         movement: function Movement(props) {
             if (!props) props = {};
             this.speed = props.speed || new Sylx.Point();
             this.acceleration = props.acceleration || new Sylx.Point();
             this.duration = 0;
+            return this;
         },
+        /**
+         * Collision component constructor
+         * @returns {object} A new collision component
+         */
         collision: function Collision() {
             this.collidesWith = [];
+            return this;
         },
+        /**
+         * Animator component constructor
+         * @param   {object} props Props for this component
+         * @returns {object} A new animator component
+         */
         animator: function Animator(props) {
             this.collection = props.collection || {};
             this.current = props.current || null;
@@ -50,6 +71,7 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
                 x: false,
                 y: false
             };
+            return this;
         }
     };
 
@@ -59,12 +81,16 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
 
     var systems = {
 
-        // Sprite system -- in charge of rendering the sprite
+        /**
+         * Sprite system, that handles and renders the sprite
+         * @param   {object}   entity Each entity
+         * @param   {object}   ctx    Main canvas context
+         */
         sprite: function (entity, ctx) {
             var sprite = entity.sprite;
 
             // do nothing if sprite is marked as non-visible
-            if (!sprite.visible) return;
+            if (!sprite.visible) return null;
 
             // is image ready?
             var image = sprite.image.data;
@@ -118,7 +144,10 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
 
 
 
-        // Movement system -- as the name says, moves the sprite
+        /**
+         * Movement system that controls sprite movement
+         * @param   {object}   entity Entity to move
+         */
         movement: function (entity) {
             // do nothing if there is no sprite component
             if (!entity.sprite) return null;
@@ -150,7 +179,11 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
 
 
 
-        // Collision system -- Determines if two entities are colliding
+        /**
+         * Collision system, to determine whether an entity is colliding with another one
+         * @param {object} e1 First entity
+         * @param {object} e2 Second entity
+         */
         collision: function (e1, e2) {
             var e1s = e1.sprite,
                 e2s = e2.sprite;
@@ -168,7 +201,10 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
 
 
 
-        // Animator system -- does animations
+        /**
+         * Animator system, that handles animations
+         * @param   {object}   entity Entity to animate
+         */
         animator: function (entity) {
             // do nothing if there is no sprite component
             if (!entity.sprite) return null;
@@ -224,7 +260,10 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
 
 
 
-        // Spritesheet system -- sets frame
+        /**
+         * Spritesheet system, setting frames for animations
+         * @param {object} entity Entity to handle
+         */
         spritesheet: function (entity) {
             if (entity.spritesheet) {
                 // if there is a spritesheet, get frame properties
@@ -250,11 +289,21 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
     // Exportable object
 
     var $component = {
+        /**
+         * Gets a component constructor
+         * @param   {string} name Name of the constructor to get
+         * @returns {object} A component constructor
+         */
         getConstructor: function (name) {
             // if no name was provided, return all constructors
             if (!name) return componentConstructor;
             return componentConstructor[name];
         },
+        /**
+         * Creates a new component constructor
+         * @param {string}   name        Name of the new component
+         * @param {function} constructor Constructor function
+         */
         createComponent: function (name, constructor) {
             if (componentConstructor[name]) throw ("Component constructor " + name + " already exists!");
             componentConstructor[name] = constructor;

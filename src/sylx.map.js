@@ -16,6 +16,12 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
     // Base level pseudoclass
 
     var baseMapPrototype = Object.assign(Object.create(Sylx.game()), {
+        /**
+         * Gets the tile data at a specific position on the current map
+         * @param   {number} x The x position to check for
+         * @param   {number} y The y position to check for
+         * @returns {object} Tile data object corresponding to the tile at the indicated position
+         */
         getTileAt: function (x, y) {
             // return 0 if out of bounds
             if ((x < 0) || (y < 0) || (x >= this.size.x) || (y >= this.size.y)) return 0;
@@ -28,6 +34,10 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
 
     // Private methods
 
+    /**
+     * Creates a new canvas used to prerender maps
+     * @param {object} map The map object
+     */
     function mountPrerenderCanvas(map) {
         // calculate how big the prerender map must be
         var prerender = {};
@@ -44,6 +54,10 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
         map.prerender = prerender;
     }
 
+    /**
+     * Prerenders a map to a prerender canvas
+     * @param {object} map The map object
+     */
     function prerenderMap(map) {
         var data = map.data;
         var tileset = map.tileset;
@@ -70,12 +84,22 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
     // Exportable object
 
     var $map = {
+        /**
+         * Creates a new map
+         * @param   {object} mapObject Map object to create the map from
+         * @returns {object} The new map
+         */
         create: function (mapObject) {
             var newMap = Object.assign(Object.create(baseMapPrototype), mapObject);
             newMap.prerender = null;
             Sylx.log("Sylx.Map: Created new map", mapObject.name);
             return newMap;
         },
+        /**
+         * Render the map
+         * @param {object} map The map object to render
+         * @param {object} ctx Canvas context to render to
+         */
         _render: function (map, ctx) {
             // get map and tileset
             // if this map has a scroll property, use it - else, use the active scene scroll property

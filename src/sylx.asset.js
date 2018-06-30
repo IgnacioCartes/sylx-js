@@ -20,13 +20,24 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
 
     // Private methods
 
-    function loadAsset(url) {
+    /**
+     * Directly loads a new asset
+     * @param   {string} path   - The path to the asset to load
+     * @returns {object} The loaded asset
+     */
+    function loadAsset(path) {
         var newImage = new window.Image();
-        newImage.src = url;
-        Sylx.log("Sylx.Assets: Loaded asset " + url);
+        newImage.src = path;
+        Sylx.log("Sylx.Assets: Loaded asset " + path);
         return newImage;
     }
 
+    /**
+     * Preloads an asset defined in the preload queue
+     * Also sets an event to remove the asset from the queue once it has been loaded
+     * @param   {string} path   - The path to the asset to load
+     * @returns {object} The loaded asset
+     */
     function preloadFromUrl(path) {
         // assuming image now
 
@@ -66,6 +77,11 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
 
     // Exportable object
     var $asset = {
+        /**
+         * Gets a new asset, either from cache or by directly loading it
+         * @param   {string} path   Path to the asset to get
+         * @returns {object} The loaded or cached asset
+         */
         get: function (path) {
             // actually load new asset
             // a relic from the past
@@ -73,8 +89,13 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
                 return cache[path];
             else
                 return loadAsset(path);
-
         },
+        /**
+         * Creates a new asset object that will hold an asset in the future
+         * @param   {path}   path  Path to the asset to load
+         * @param   {object} props Optional props to be passed to the asset object
+         * @returns {object} A new asset object
+         */
         create: function (path, props) {
             // create base asset object
             var newAsset = Object.assign({
@@ -92,6 +113,9 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
             }
             return newAsset;
         },
+        /**
+         * Adds one or more assets to the preload queue
+         */
         queue: function () {
             if (arguments.length === 0) return null;
             // go through list of arguments to preload
@@ -108,6 +132,9 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
                 }
             }
         },
+        /**
+         * Initializes the preloading of assets in the queue
+         */
         preloadQueue: function () {
             // do nothing if preloading queue is empty
             if (preloadQueue.length === 0) return null;
@@ -134,19 +161,19 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
                 }
             }
         },
+        /**
+         * Gets the preloading progress
+         * @returns {number} A number from 0 to 1 indicating progress
+         */
         getProgress: function () {
             if (!this._isPreloading) return 1;
             return (1 - (preloadQueue.length / preloadQueueSize));
         },
+        /**
+         * Clears loaded assets cache
+         */
         clearCache: function () {
             cache = {};
-        },
-        _getInfo: function () {
-            return {
-                assetsObjectCollection: assetsObjectCollection,
-                preloadQueue: preloadQueue,
-                cache: cache
-            };
         },
         _isPreloading: false
     };
