@@ -76,7 +76,6 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
      */
     function onLoadAsset(path, data) {
         cache[path] = data;
-        console.log(path, data);
         // find asset on preloading array and splice it
         preloadQueue.splice(preloadQueue.indexOf(path), 1);
         // if length is 0 then preloading is done
