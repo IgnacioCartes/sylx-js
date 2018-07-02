@@ -352,32 +352,37 @@
             if (typeof scene.update === 'function')
                 scene.update(environment);
 
-            // iterate through entities
-            for (var index = 0, len = scene.entities.length; index < len; index++) {
-                var entity = scene.entities[index];
+            // only update entities if scene is not marked with frozenEntities
+            if (!scene.frozenEntities) {
 
-                // ignore if this entity is scheduled to be deleted
-                if (entity._kill) continue;
+                // iterate through entities
+                for (var index = 0, len = scene.entities.length; index < len; index++) {
+                    var entity = scene.entities[index];
 
-                // run their update method
-                if (typeof entity.update === 'function') entity.update.call(entity, environment);
+                    // ignore if this entity is scheduled to be deleted
+                    if (entity._kill) continue;
 
-                // movement component
-                if (entity.movement) Sylx.Component.System.movement(entity);
+                    // run their update method
+                    if (typeof entity.update === 'function') entity.update.call(entity, environment);
 
-                // animator component
-                if (entity.animator) Sylx.Component.System.animator(entity);
+                    // movement component
+                    if (entity.movement) Sylx.Component.System.movement(entity);
 
-                // collision component
-                if (entity.collision)
-                    entity.collision.collidesWith = [];
+                    // animator component
+                    if (entity.animator) Sylx.Component.System.animator(entity);
 
-                if (index < len)
-                    for (var j = (index + 1); j < len; j++) {
-                        var entityToCheckAgainst = scene.entities[j];
-                        if (entity.collision && entityToCheckAgainst.collision)
-                            Sylx.Component.System.collision(entity, entityToCheckAgainst);
-                    }
+                    // collision component
+                    if (entity.collision)
+                        entity.collision.collidesWith = [];
+
+                    if (index < len)
+                        for (var j = (index + 1); j < len; j++) {
+                            var entityToCheckAgainst = scene.entities[j];
+                            if (entity.collision && entityToCheckAgainst.collision)
+                                Sylx.Component.System.collision(entity, entityToCheckAgainst);
+                        }
+                    
+                }
             }
         }
     }

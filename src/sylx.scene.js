@@ -147,6 +147,7 @@ window.Sylx.Scene = (function (window, Sylx, undefined) {
             current = sceneToSet;
             return sceneToSet;
         },
+        frozenEntities: false,
         _scheduledSceneToSet: null,
         _argumentsForScene: []
     };
