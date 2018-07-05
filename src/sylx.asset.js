@@ -178,6 +178,17 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
             return newAsset;
         },
         /**
+         * Gets an asset directly from cache
+         * @param   {string} path Asset path
+         * @returns {object} The asset if it exists, else it returns null
+         */
+        getFromCache: function (path) {
+            if (cache[path])
+                return cache[path];
+            else
+                return null;
+        },
+        /**
          * Adds one or more assets to the preload queue
          */
         queue: function () {
@@ -192,7 +203,13 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
                         path: asset
                     });
                 } else if (typeof asset === 'object') {
-                    preloadQueue.push(asset);
+                    // array?
+                    if (Array.isArray(asset)) {
+                        // recursive
+                        this.queue.apply(this, asset);
+                    } else {
+                        preloadQueue.push(asset);
+                    }
                 }
             }
         },
