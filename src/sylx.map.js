@@ -18,8 +18,8 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
     var baseMapPrototype = Object.assign(Object.create(Sylx.game()), {
         /**
          * Gets the tile data at a specific position on the current map
-         * @param   {number} x The x position to check for
-         * @param   {number} y The y position to check for
+         * @param   {number} x The x tile position to check for
+         * @param   {number} y The y tile position to check for
          * @returns {object} Tile data object corresponding to the tile at the indicated position
          */
         getTileAt: function (x, y) {
@@ -50,7 +50,6 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
         var prerenderCanvasHeight = prerender.tilesPerCol * map.tileSize.y;
         prerender.canvas = Sylx.Canvas._createCanvas(prerenderCanvasWidth, prerenderCanvasHeight, 1);
         prerender.topLeft = new Sylx.Point(0, 0);
-
         map.prerender = prerender;
     }
 
@@ -64,9 +63,9 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
         var prerender = map.prerender;
         for (var x = 0; x < prerender.tilesPerRow; x++) {
             for (var y = 0; y < prerender.tilesPerCol; y++) {
-                tileset.drawTile(
+                drawTileToPrerender(
+                    map,
                     map.getTileAt(x + prerender.topLeft.x, y + prerender.topLeft.y),
-                    prerender.canvas.context,
                     x * prerender.tileSize.x,
                     y * prerender.tileSize.y
                 );
@@ -74,10 +73,64 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
         }
     }
 
-    function slidePrerender(direction, magnitude) {
-
+    /**
+     * Draws specified tile in map to its prerender canvas
+     * @param {object} map   The map object
+     * @param {number} index Time index to draw
+     * @param {number} x     X position to draw the tile to
+     * @param {number} y     Y position to draw the tile to
+     */
+    function drawTileToPrerender(map, index, x, y) {
+        // render
+        if (map.tileset.data.complete)
+            map.prerender.canvas.context.drawImage(
+                map.tileset.data,
+                index * map.tileSize.x,
+                0,
+                map.tileSize.x,
+                map.tileSize.y,
+                x,
+                y,
+                map.tileSize.x,
+                map.tileSize.y
+            );
     }
 
+    /*
+    // keep this function around - maybe later down the road, with bigger maps this method of rendering maps 
+    function slidePrerender(map, sX, sY) {
+        if ((sX === 0) && (sY === 0)) return null;
+
+        var leftBound = 0,
+            rightBound = map.prerender.canvas.width,
+            upBound = 0,
+            downBound = map.prerender.canvas.height;
+
+        // slide is negative (left/west or up/north)
+        if (sX < 0) rightBound += sX;
+        if (sY < 0) downBound += sY;
+
+        // slide is positive (right/east or down/south)
+        if (sX > 0) leftBound += sX;
+        if (sY > 0) upBound += sY;
+
+        // |1234| ->
+        //  |2345|
+        console.log(leftBound, upBound, rightBound - leftBound, downBound - upBound);
+
+        map.prerender.canvas.context.drawImage(
+            map.prerender.canvas.element,
+            leftBound,
+            upBound,
+            rightBound - leftBound,
+            downBound - upBound,
+            0,
+            0,
+            rightBound - leftBound,
+            downBound - upBound
+        );
+    }
+    */
 
 
 
@@ -101,14 +154,16 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
          * @param {object} ctx Canvas context to render to
          */
         _render: function (map, ctx) {
-            // get map and tileset
+            // validate tileset data
+            if (!map.tileset || !map.tileSize) return null;
+
             // if this map has a scroll property, use it - else, use the active scene scroll property
             var scroll = map.scroll || Sylx.Scene.getCurrent().scroll;
 
             var tileScrollX = Math.floor(scroll.x / map.tileSize.x);
             var tileScrollY = Math.floor(scroll.y / map.tileSize.y);
 
-            // do initial prerendering if needed
+            // do initial canvas creation and prerendering if needed
             if (!map.prerender) {
                 mountPrerenderCanvas(map);
                 map.prerender.topLeft.x = tileScrollX;
@@ -119,6 +174,7 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
             // detect if camera has scrolled enough (one tile) to update the prerender
             var diff = new Sylx.Point(tileScrollX - map.prerender.topLeft.x, tileScrollY - map.prerender.topLeft.y);
             if (diff.x || diff.y) {
+                //slidePrerender(map, diff.x * map.tileSize.x, diff.y * map.tileSize.y);
                 map.prerender.topLeft.x = tileScrollX;
                 map.prerender.topLeft.y = tileScrollY;
                 prerenderMap(map);
