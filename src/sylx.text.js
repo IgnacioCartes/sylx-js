@@ -47,7 +47,7 @@ window.Sylx.Text = (function (window, Sylx, undefined) {
         renderText: function (text, x, y, context, props) {
             // format props
             props = props || {};
-
+            
             // prepare text
             var textToRender = (typeof text === 'string') ? text : text.toString();
             if (!props.noTrim) textToRender = textToRender.trim();
@@ -62,7 +62,7 @@ window.Sylx.Text = (function (window, Sylx, undefined) {
                 if ((char >= font.firstCharCode) && (char <= font.lastCharCode)) {
                     // render character
                     context.drawImage(
-                        font.image,
+                        font.bitmap,
                         (char - font.firstCharCode) * font.characterWidth,
                         0,
                         font.characterWidth,
