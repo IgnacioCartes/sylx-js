@@ -17,15 +17,37 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
 
     var baseMapPrototype = Object.assign(Object.create(Sylx.game()), {
         /**
-         * Gets the tile data at a specific position on the current map
+         * Gets the tile data at a specific position on this map
          * @param   {number} x The x tile position to check for
          * @param   {number} y The y tile position to check for
-         * @returns {object} Tile data object corresponding to the tile at the indicated position
+         * @returns {number} Tile index corresponding to the tile at the indicated position
          */
         getTileAt: function (x, y) {
             // return 0 if out of bounds
             if ((x < 0) || (y < 0) || (x >= this.size.x) || (y >= this.size.y)) return 0;
             return (this.data[y][x]);
+        },
+        /**
+         * Sets the tile data at a specified position on this map
+         * @param {number}  index    The tile index to set
+         * @param {number}  x        The x tile position to set
+         * @param {number}  y        The y tile position to set
+         * @param {boolean} noRender Whether or not to render this tile inmediately
+         */
+        setTile: function (index, x, y, noRender) {
+            // ignore if out of bounds
+            if ((x < 0) || (y < 0) || (x >= this.size.x) || (y >= this.size.y)) return null;
+            this.data[y][x] = index;
+            // check noRender
+            if (!noRender) {
+                // check if this tile position is inside the prerender canvas area
+                var px = (x - this.prerender.topLeft.x) * this.prerender.tileSize.x,
+                    py = (y - this.prerender.topLeft.y) * this.prerender.tileSize.y;
+                console.log(px, py, this.prerender.canvas);
+                if ((px >= 0) && (py >= 0) && (px < this.prerender.canvas.width) && (py < this.prerender.canvas.height))
+                    drawTileToPrerender(this, index, px, py);
+            }
+
         }
 
     });
