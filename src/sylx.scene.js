@@ -88,7 +88,17 @@ window.Sylx.Scene = (function (window, Sylx, undefined) {
             for (index = 0, len = levelObject.entities.length; index < len; index++)
                 this.createEntity.apply(this, levelObject.entities[index]);
 
+        },
+        /**
+         * Gets a map
+         * @param   {number} index Map index
+         * @returns {object} The map object
+         */
+        getMap: function(index) {
+            if (this.maps)
+                return this.maps[index];
         }
+        
     });
 
 
