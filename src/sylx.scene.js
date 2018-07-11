@@ -94,11 +94,38 @@ window.Sylx.Scene = (function (window, Sylx, undefined) {
          * @param   {number} index Map index
          * @returns {object} The map object
          */
-        getMap: function(index) {
+        getMap: function (index) {
             if (this.maps)
                 return this.maps[index];
+        },
+        /**
+         * Directly adds a map object to the scene
+         * @param {object} mapObject The map object
+         */
+        addMap: function (mapObject) {
+            // create maps array if it doesn't exist
+            if (!this.maps) this.maps = [];
+
+            // push map
+            this.maps.push(mapObject);
+        },
+        /**
+         * Directly removes a map object (use with care!)
+         * @param   {object}   mapIndex A map index or the map object to remove
+         */
+        removeMap: function (mapIndex) {
+            // ignore if maps array doesn't exist
+            if (!this.maps) return null;
+
+            // check argument type
+            if (typeof mapIndex === "object")
+                mapIndex = this.maps.indexOf(mapIndex);
+
+            if ((mapIndex >= 0) && (mapIndex < this.maps.length))
+                this.maps.splice(mapIndex, 1);
+
         }
-        
+
     });
 
 
