@@ -43,7 +43,6 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
                 // check if this tile position is inside the prerender canvas area
                 var px = (x - this.prerender.topLeft.x) * this.prerender.tileSize.x,
                     py = (y - this.prerender.topLeft.y) * this.prerender.tileSize.y;
-                console.log(px, py, this.prerender.canvas);
                 if ((px >= 0) && (py >= 0) && (px < this.prerender.canvas.width) && (py < this.prerender.canvas.height))
                     drawTileToPrerender(this, index, px, py);
             }
@@ -167,6 +166,12 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
         create: function (mapObject) {
             var newMap = Object.assign(Object.create(baseMapPrototype), mapObject);
             newMap.prerender = null;
+            // if there is a map size but not actual map data property, create an empty map
+            if (newMap.size && !newMap.data) {
+                newMap.data = new Array(newMap.size.y);
+                for (var y = 0; y < newMap.size.y; y++)
+                    newMap.data[y] = new Array(newMap.size.x).fill(0);
+            }
             Sylx.log("Sylx.Map: Created new map", mapObject.name);
             return newMap;
         },
