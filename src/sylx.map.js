@@ -40,6 +40,11 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
             this.data[y][x] = index;
             // check noRender
             if (!noRender) {
+                // if prerender is not ready, cancel and warn
+                if (!this.prerender) {
+                    console.warn("Tried to draw to map while prerender is not ready!");
+                    return;
+                }
                 // check if this tile position is inside the prerender canvas area
                 var px = (x - this.prerender.topLeft.x) * this.prerender.tileSize.x,
                     py = (y - this.prerender.topLeft.y) * this.prerender.tileSize.y;
@@ -206,6 +211,12 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
                 map.prerender.topLeft.y = tileScrollY;
                 prerenderMap(map);
             }
+
+            // set opacity
+            if (typeof map.opacity === 'number')
+                ctx.globalAlpha = map.opacity;
+            else
+                ctx.globalAlpha = 1.0;
 
             // copy map
             ctx.drawImage(
