@@ -412,6 +412,11 @@
                 for (var mapIndex = 0; mapIndex < scene.maps.length; mapIndex++)
                     Sylx.Map._render(scene.maps[mapIndex], ctx);
 
+            // sort entities
+            scene.entities.sort(function (a, b) {
+                return a.zOrder - b.zOrder;
+            });
+
             // iterate through entities
             for (var index = 0, len = scene.entities.length; index < len; index++) {
                 var entity = scene.entities[index];
