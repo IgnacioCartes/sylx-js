@@ -381,7 +381,7 @@
                             if (entity.collision && entityToCheckAgainst.collision)
                                 Sylx.Component.System.collision(entity, entityToCheckAgainst);
                         }
-                    
+
                 }
             }
         }
@@ -437,6 +437,12 @@
             if (typeof scene.renderAfter === 'function')
                 scene.renderAfter(ctx);
         }
+
+        // set opacity from scene if it exists
+        if (typeof scene.opacity === 'number')
+            Sylx.Canvas.getContext('main').globalAlpha = scene.opacity;
+        else
+            Sylx.Canvas.getContext('main').globalAlpha = 1.0;
 
         // copy to main canvas
         if (Sylx.Canvas.autoCopy) Sylx.Canvas.copy();
