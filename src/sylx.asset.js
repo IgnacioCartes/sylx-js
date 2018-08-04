@@ -217,7 +217,8 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
          * Initializes the preloading of assets in the queue
          */
         preloadQueue: function (queue) {
-            queue = queue ||  preloadQueue;
+            // default to the queue maintained by the assets module
+            queue = queue || preloadQueue;
             // do nothing if preloading queue is empty
             if (queue.length === 0) return null;
             preloadQueueSize = queue.length;
@@ -230,6 +231,9 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
                 // run preload logic
                 preloadFromUrl(queue[index].path);
 
+        },
+        preloadAll: function () {
+            this.preloadQueue(assetsObjectCollection);
         },
         /**
          * Gets the preloading progress
