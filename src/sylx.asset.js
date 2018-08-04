@@ -216,18 +216,19 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
         /**
          * Initializes the preloading of assets in the queue
          */
-        preloadQueue: function () {
+        preloadQueue: function (queue) {
+            queue = queue ||  preloadQueue;
             // do nothing if preloading queue is empty
-            if (preloadQueue.length === 0) return null;
-            preloadQueueSize = preloadQueue.length;
+            if (queue.length === 0) return null;
+            preloadQueueSize = queue.length;
 
             // mark ispreloading
             this._isPreloading = true;
 
             // iterate through queue
-            for (var index = 0; index < preloadQueue.length; index++)
+            for (var index = 0; index < queue.length; index++)
                 // run preload logic
-                preloadFromUrl(preloadQueue[index].path);
+                preloadFromUrl(queue[index].path);
 
         },
         /**
