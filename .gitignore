@@ -10,3 +10,6 @@ examples/
 
 # Development files
 devel/
+
+# Favicon
+favicon.ico
