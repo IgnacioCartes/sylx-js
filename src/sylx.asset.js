@@ -232,6 +232,9 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
                 preloadFromUrl(queue[index].path);
 
         },
+        /**
+         * Preloads all non-loaded assets
+         */
         preloadAll: function () {
             this.preloadQueue(assetsObjectCollection);
         },
