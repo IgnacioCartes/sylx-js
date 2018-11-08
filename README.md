@@ -68,7 +68,7 @@ Sylx comes with some modules to help kickstart a game.
   - **width**: base width of the canvas, in pixels
   - **height**: base height of the canvas, in pixels
   - **scale**: scaling of the canvas - this will increase or decrease the final size of the canvas (i.e.: a 100x100 canvas with a scale of 2 will end up as a 200x200 canvas)
-  - **appendTo**: DOM Element to append the canvas to - if ommited, it will be appended to the document body by default
+  - **appendTo**: DOM Element to append the canvas to - if omitted, it will be appended to the document body by default
 
 **Example:**
 ````
