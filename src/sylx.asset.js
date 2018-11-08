@@ -11,9 +11,16 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
 
     // Private variables
 
+    // assetsObjectCollection holds all of the Asset objects that are created (with .create()) before their data has been loaded
     var assetsObjectCollection = [];
+
+    // preloadQueue variables hold paths to assets added with .queue() that will be loaded when .preloadQueue() is executed
     var preloadQueue = [],
-        preloadQueueSize = 0;
+        preloadQueueSize = 0,
+        manualPreload = false,
+        ondone = null;
+
+    // cache holds all of the data loaded
     var cache = {};
 
 
@@ -22,11 +29,13 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
 
     /**
      * Loads a new asset into cache
-     * @param   {string}   path             Path to the asset
+     * @param   {object}   asset            Asset to load
      * @param   {boolean}  [isPreload=true] Determines whether or not to attach a preload listener to this asset
      * @returns {[[Type]]} [[Description]]
      */
-    function loadToCache(path, isPreload) {
+    function loadToCache(asset, isPreload) {
+
+        var path = asset.path;
 
         // defaults to true
         isPreload = isPreload || true;
@@ -40,7 +49,7 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
             var newImage = new window.Image();
             newImage.src = path;
             if (isPreload) {
-                newImage.onload = onLoadAsset.bind(null, path, newImage);
+                newImage.onload = onLoadAsset.bind(null, asset, newImage);
             } else {
                 cache[path] = newImage;
             }
@@ -59,7 +68,7 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
                 var status = xhr.status;
                 var response = xhr.response;
                 if (status === 200) {
-                    onLoadAsset(path, response);
+                    onLoadAsset(asset, response);
                 } else {
                     throw ("JSON asset " + path + " failed to load!", response);
                 }
@@ -75,48 +84,76 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
      * @param {string} path Asset path
      * @param {object} data Actual asset object
      */
-    function onLoadAsset(path, data) {
+    function onLoadAsset(asset, data) {
+        var path = asset.path;
         cache[path] = data;
+
         // find asset on preloading array
-        var thisAsset = preloadQueue.indexOf(path);
-        // run custom onload if it exists...
-        if (typeof thisAsset.onload === "function") thisAsset.onload(data);
+        var assetIndex = preloadQueue.indexOf(preloadQueue.find(function (obj) {
+            return obj.path === path;
+        }));
+
+        // update asset
+        updateLoadedAsset(asset, data);
+
         // ... and splice it
-        preloadQueue.splice(thisAsset, 1);
+        if (assetIndex !== -1)
+            preloadQueue.splice(assetIndex, 1);
+
         // if length is 0 then preloading is done
         if (preloadQueue.length === 0) updateAllLoadedAssets();
+    }
+
+    /**
+     * Updates a single asset object when it has loaded
+     * @param {string} path Asset path
+     * @param {object} data Actual asset object
+     */
+    function updateLoadedAsset(asset, data) {
+        asset.data = data;
+        asset.type = getAssetTypeFromPath(asset.path);
+        asset.loaded = true;
+        if (typeof asset.onload === "function") asset.onload(data);
     }
 
     /**
      * Updates asset objects when all preloads are finished, fetching from cache object
      */
     function updateAllLoadedAssets() {
-        // update asset objects
-        for (var objIndex = 0; objIndex < assetsObjectCollection.length; objIndex++) {
+        // clear assets from object collection (from the last)
+        for (var objIndex = assetsObjectCollection.length - 1; objIndex >= 0; objIndex--) {
             var assetObject = assetsObjectCollection[objIndex];
+
             // is this asset object referencing something we have in cache?
             var requestedPath = assetObject.path;
-            if (cache[requestedPath]) {
+            if (cache[requestedPath] && !assetObject.loaded) {
                 assetObject.data = cache[requestedPath];
                 assetObject.type = getAssetTypeFromPath(requestedPath);
                 assetObject.loaded = true;
+                if (typeof assetObject.onload === "function") assetObject.onload(assetObject.data);
                 // once an asset has been loaded, this module can stop caring about it
                 assetsObjectCollection.splice(objIndex, 1);
-                break;
             }
+            if (assetObject.loaded) assetsObjectCollection.splice(objIndex, 1);
         }
 
         // set property to let the main game module know we're done here
-        $asset._isPreloading = false;
+        if (!manualPreload) $asset._isPreloading = false;
+
+        if (typeof ondone === "function") {
+            ondone();
+            ondone = null;
+        }
     }
 
     /**
      * Preloads an asset defined in the preload queue
      * Also sets an event to remove the asset from the queue once it has been loaded
-     * @param   {string} path   - The path to the asset to load
+     * @param   {object} asset The asset object
      * @returns {object} The loaded asset
      */
-    function preloadFromUrl(path) {
+    function preloadAsset(asset) {
+        var path = asset.path;
         // first, check if asset is cached already
         if (cache[path]) {
             preloadQueue.splice(preloadQueue.indexOf(path), 1);
@@ -124,7 +161,7 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
         }
 
         // get new asset
-        var newAsset = loadToCache(path, true);
+        var newAsset = loadToCache(asset, true);
         return newAsset;
     }
 
@@ -160,7 +197,7 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
     var $asset = {
         /**
          * Creates a new asset object that will hold an asset in the future
-         * @param   {path}   path  Path to the asset to load
+         * @param   {string} path  Path to the asset to load
          * @param   {object} props Optional props to be passed to the asset object
          * @returns {object} A new asset object
          */
@@ -184,7 +221,17 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
             return newAsset;
         },
         /**
-         * Gets an asset directly from cache
+         * Creates a new asset object and loads it inmediately
+         * @param {string}   path  Path to the asset to load
+         * @param {[[Type]]} props [[Description]]
+         */
+        createAndLoad: function (path, props) {
+            var newAsset = $asset.create(path, props);
+            loadToCache(newAsset);
+            return newAsset;
+        },
+        /**
+         * Gets an asset directly from cache if it exists
          * @param   {string} path Asset path
          * @returns {object} The asset if it exists, else it returns null
          */
@@ -222,27 +269,46 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
         /**
          * Initializes the preloading of assets in the queue
          */
-        preloadQueue: function (queue) {
+        preloadQueue: function (cb) {
             // default to the queue maintained by the assets module
-            queue = queue || preloadQueue;
+            var queue = preloadQueue;
+            ondone = cb;
             // do nothing if preloading queue is empty
             if (queue.length === 0) return null;
             preloadQueueSize = queue.length;
 
             // mark ispreloading
-            this._isPreloading = true;
+            if (!manualPreload) this._isPreloading = true;
 
             // iterate through queue
             for (var index = 0; index < queue.length; index++)
                 // run preload logic
-                preloadFromUrl(queue[index].path);
+                preloadAsset(queue[index]);
 
+        },
+        /**
+         * Starts manual preloading
+         */
+        startPreloading: function () {
+            this._isPreloading = true;
+            manualPreload = true;
+        },
+        /**
+         * Ends manual preloading
+         */
+        endPreloading: function () {
+            this._isPreloading = false;
+            manualPreload = false;
         },
         /**
          * Preloads all non-loaded assets
          */
-        preloadAll: function () {
-            this.preloadQueue(assetsObjectCollection);
+        preloadAll: function (cb) {
+            // add all objects that might be on the created assets collection to the preload queue
+            $asset.queue(assetsObjectCollection);
+
+            // call preload
+            this.preloadQueue(cb);
         },
         /**
          * Gets the preloading progress
