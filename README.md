@@ -15,12 +15,12 @@ Sylx games are composed of modules, which are how game elements are separated. T
 ````
 Sylx.module('game.npc', [], () => {
 
-	var variableInsideClosure;
+    var variableInsideClosure;
 
-	return Sylx.Entity.defineAs('npc', {
-		init: function() {},
-		/* ... */
-	});
+    return Sylx.Entity.defineAs('npc', {
+        init: function() {},
+        /* ... */
+    });
 
 });
 ````
@@ -30,13 +30,13 @@ Modules can be accessed and used by other modules by injecting it as a dependenc
 ````
 Sylx.module('game.useNpc', ['game.npc'], ($npc) => {
 
-	return Sylx.Scene.create({
-		init: function() {
-			// $npc references the 'game.npc' module created earlier
-			this.createEntity($npc);
-		},
-		/* ... */
-	});
+    return Sylx.Scene.create({
+        init: function() {
+            // $npc references the 'game.npc' module created earlier
+            this.createEntity($npc);
+        },
+        /* ... */
+    });
 
 });
 ````
@@ -51,8 +51,8 @@ The **Sylx.run** method sets a function that will be executed once the game envi
 
 ````
 Sylx.run(() =>
-	Sylx.Canvas.create(MyCanvasProps);
-	Sylx.Scene.set(MyFirstScene);
+    Sylx.Canvas.create(MyCanvasProps);
+    Sylx.Scene.set(MyFirstScene);
 );
 ````
 
@@ -65,18 +65,18 @@ Sylx comes with some modules to help kickstart a game.
 ### Sylx.Canvas
 
 - **Sylx.Canvas.create(props)**: Creates the main game canvas, with the properties defined in the **props** object.
--- **width**: base width of the canvas, in pixels
--- **height**: base height of the canvas, in pixels
--- **scale**: scaling of the canvas - this will increase or decrease the final size of the canvas (i.e.: a 100x100 canvas with a scale of 2 will end up as a 200x200 canvas)
--- **appendTo**: DOM Element to append the canvas to - if ommited, it will be appended to the document body by default
+  - **width**: base width of the canvas, in pixels
+  - **height**: base height of the canvas, in pixels
+  - **scale**: scaling of the canvas - this will increase or decrease the final size of the canvas (i.e.: a 100x100 canvas with a scale of 2 will end up as a 200x200 canvas)
+  - **appendTo**: DOM Element to append the canvas to - if ommited, it will be appended to the document body by default
 
 **Example:**
 ````
 Sylx.Canvas.create({
-	width: 480,
-	height: 360,
-	scale: 2.0,
-	appendTo: document.getElementById('game-container')
+    width: 480,
+    height: 360,
+    scale: 2.0,
+    appendTo: document.getElementById('game-container')
 });
 ````
 
@@ -93,11 +93,11 @@ ___
 **Example:**
 ````
 Sylx.Input.bind({
-	'left': 37,
-	'up': 38,
-	'right': 39,
-	'down': 40,
-	'enter': 13
+    'left': 37,
+    'up': 38,
+    'right': 39,
+    'down': 40,
+    'enter': 13
 });
 ````
 
@@ -106,7 +106,3 @@ Sylx.Input.bind({
 - **Sylx.Input.down(keystring)**: Returns **true** if the key bound to the provided keystring is being held down, else it returns **false**.
 
 ___
-
-
-
-
