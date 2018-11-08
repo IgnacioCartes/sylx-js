@@ -22,8 +22,9 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
 
     /**
      * Loads a new asset into cache
-     * @param {string}  path      Path to the asset
-     * @param {boolean} isPreload Determines whether or not to attach a preload listener to this asset
+     * @param   {string}   path             Path to the asset
+     * @param   {boolean}  [isPreload=true] Determines whether or not to attach a preload listener to this asset
+     * @returns {[[Type]]} [[Description]]
      */
     function loadToCache(path, isPreload) {
 
@@ -76,8 +77,12 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
      */
     function onLoadAsset(path, data) {
         cache[path] = data;
-        // find asset on preloading array and splice it
-        preloadQueue.splice(preloadQueue.indexOf(path), 1);
+        // find asset on preloading array
+        var thisAsset = preloadQueue.indexOf(path);
+        // run custom onload if it exists...
+        if (typeof thisAsset.onload === "function") thisAsset.onload(data);
+        // ... and splice it
+        preloadQueue.splice(thisAsset, 1);
         // if length is 0 then preloading is done
         if (preloadQueue.length === 0) updateAllLoadedAssets();
     }
@@ -172,6 +177,7 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
                 newAsset.data = cache[path];
                 newAsset.type = getAssetTypeFromPath(path);
                 newAsset.loaded = true;
+                if (typeof newAsset.onload === "function") newAsset.onload(cache[path]);
             } else {
                 assetsObjectCollection.push(newAsset);
             }

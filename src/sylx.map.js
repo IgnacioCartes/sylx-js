@@ -108,18 +108,19 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
      */
     function drawTileToPrerender(map, index, x, y) {
         // render
-        if (map.tileset.data.complete)
-            map.prerender.canvas.context.drawImage(
-                map.tileset.data,
-                index * map.tileSize.x,
-                0,
-                map.tileSize.x,
-                map.tileSize.y,
-                x,
-                y,
-                map.tileSize.x,
-                map.tileSize.y
-            );
+        if (map.tileset.data)
+            if (map.tileset.data.complete)
+                map.prerender.canvas.context.drawImage(
+                    map.tileset.data,
+                    index * map.tileSize.x,
+                    0,
+                    map.tileSize.x,
+                    map.tileSize.y,
+                    x,
+                    y,
+                    map.tileSize.x,
+                    map.tileSize.y
+                );
     }
 
     /*
