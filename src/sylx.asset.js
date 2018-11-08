@@ -134,7 +134,6 @@ window.Sylx.Asset = (function (window, Sylx, undefined) {
                 // once an asset has been loaded, this module can stop caring about it
                 assetsObjectCollection.splice(objIndex, 1);
             }
-            if (assetObject.loaded) assetsObjectCollection.splice(objIndex, 1);
         }
 
         // set property to let the main game module know we're done here
