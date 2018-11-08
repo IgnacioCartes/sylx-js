@@ -200,8 +200,16 @@
         Sylx.log("Sylx: Initializing module " + module.name);
 
         // determine whether module body was provided as an object or a function
-        if (typeof module.body === 'function')
-            module.body = module.body.call(environment) || {};
+        if (typeof module.body === 'function') {
+            // functions need their dependencies to be provided
+            var moduleArgs = [];
+            if (module.dependencies.length) {
+                for (index = 0; index < module.dependencies.length; index++) {
+                    moduleArgs.push(modules[module.dependencies[index]].body);
+                }
+            }
+            module.body = module.body.apply(environment, moduleArgs) || {};
+        }
 
         // create new object for the module in the environment
         // set our own proto only if original object has no "custom" prototype
