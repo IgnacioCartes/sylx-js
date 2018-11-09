@@ -33,6 +33,7 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
             this.visible = props.visible || true;
             this.opacity = props.opacity || 1.0;
             this.order = props.order || 0;
+            this.fixed = props.fixed || false;
             return this;
         },
         /**
@@ -98,8 +99,8 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
                 if (image.complete) {
                     // prepare to draw
                     var sceneOffset = Sylx.Scene.getCurrent().scroll;
-                    var realX = sprite.position.x - sprite.offset.x - sceneOffset.x,
-                        realY = sprite.position.y - sprite.offset.y - sceneOffset.y;
+                    var realX = sprite.position.x - sprite.offset.x - (sprite.fixed ? 0 : sceneOffset.x),
+                        realY = sprite.position.y - sprite.offset.y - (sprite.fixed ? 0 : sceneOffset.y);
 
                     // is the sprite on screen?
                     if ((realX > Sylx.Canvas.width) || (realY > Sylx.Canvas.height) || (realX < -sprite.size.x) || (realY < -sprite.size.y)) return null;
