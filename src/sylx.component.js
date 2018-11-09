@@ -33,7 +33,7 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
             this.visible = props.visible || true;
             this.opacity = props.opacity || 1.0;
             this.order = props.order || 0;
-            this.fixed = props.fixed || false;
+            this.fixed = props.fixed ||  false;
             return this;
         },
         /**
@@ -93,54 +93,66 @@ window.Sylx.Component = (function (window, Sylx, undefined) {
             // do nothing if sprite is marked as non-visible
             if (!sprite.visible) return null;
 
-            // is image ready?
-            var image = sprite.image.data;
-            if (image)
-                if (image.complete) {
-                    // prepare to draw
-                    var sceneOffset = Sylx.Scene.getCurrent().scroll;
-                    var realX = sprite.position.x - sprite.offset.x - (sprite.fixed ? 0 : sceneOffset.x),
-                        realY = sprite.position.y - sprite.offset.y - (sprite.fixed ? 0 : sceneOffset.y);
+            // image or canvas?
+            var isImage, isCanvas, image;
+            if (sprite.image.data && (sprite.image.data instanceof HTMLImageElement)) {
+                isImage = true;
+                image = sprite.image.data;
+                // return if canvas is not complete
+                if (!image.complete) return null;
+            } else if (sprite.image.element && (sprite.image.element.nodeName === "CANVAS")) {
+                isCanvas = true;
+                image = sprite.image.element;
+            } else {
+                throw ("Can't determine if element is image or canvas!");
+            }
 
-                    // is the sprite on screen?
-                    if ((realX > Sylx.Canvas.width) || (realY > Sylx.Canvas.height) || (realX < -sprite.size.x) || (realY < -sprite.size.y)) return null;
 
-                    // set opacity
-                    if (typeof sprite.opacity === 'number')
-                        ctx.globalAlpha = sprite.opacity;
-                    else
-                        ctx.globalAlpha = 1.0;
+            if (image) {
+                // prepare to draw
+                var sceneOffset = Sylx.Scene.getCurrent().scroll;
+                var realX = sprite.position.x - sprite.offset.x - (sprite.fixed ? 0 : sceneOffset.x),
+                    realY = sprite.position.y - sprite.offset.y - (sprite.fixed ? 0 : sceneOffset.y);
 
-                    // detect flipping
-                    var flip = {
-                        x: 1,
-                        y: 1
-                    };
-                    if (sprite.flip) {
-                        if (sprite.flip.x) flip.x = -1;
-                        if (sprite.flip.y) flip.y = -1;
-                    }
+                // is the sprite on screen?
+                if ((realX > Sylx.Canvas.width) || (realY > Sylx.Canvas.height) || (realX < -sprite.size.x) || (realY < -sprite.size.y)) return null;
 
-                    if ((flip.x === -1) || (flip.y === -1))
-                        ctx.scale(flip.x, flip.y);
+                // set opacity
+                if (typeof sprite.opacity === 'number')
+                    ctx.globalAlpha = sprite.opacity;
+                else
+                    ctx.globalAlpha = 1.0;
 
-                    // render sprite
-                    ctx.drawImage(
-                        image,
-                        sprite.sourcePosition.x, // * flip.x,
-                        sprite.sourcePosition.y, // * flip.x,
-                        sprite.size.x,
-                        sprite.size.y,
-                        realX * flip.x - (flip.x === -1 ? sprite.size.x : 0),
-                        realY * flip.y - (flip.y === -1 ? sprite.size.y : 0),
-                        sprite.size.x,
-                        sprite.size.y
-                    );
-
-                    // revert scale
-                    if ((flip.x === -1) || (flip.y === -1))
-                        ctx.scale(flip.x, flip.y);
+                // detect flipping
+                var flip = {
+                    x: 1,
+                    y: 1
+                };
+                if (sprite.flip) {
+                    if (sprite.flip.x) flip.x = -1;
+                    if (sprite.flip.y) flip.y = -1;
                 }
+
+                if ((flip.x === -1) || (flip.y === -1))
+                    ctx.scale(flip.x, flip.y);
+
+                // render sprite
+                ctx.drawImage(
+                    image,
+                    sprite.sourcePosition.x, // * flip.x,
+                    sprite.sourcePosition.y, // * flip.x,
+                    sprite.size.x,
+                    sprite.size.y,
+                    realX * flip.x - (flip.x === -1 ? sprite.size.x : 0),
+                    realY * flip.y - (flip.y === -1 ? sprite.size.y : 0),
+                    sprite.size.x,
+                    sprite.size.y
+                );
+
+                // revert scale
+                if ((flip.x === -1) || (flip.y === -1))
+                    ctx.scale(flip.x, flip.y);
+            }
         },
 
 
