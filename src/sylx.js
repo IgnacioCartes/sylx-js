@@ -300,13 +300,11 @@
             if (typeof scene.preload === 'function')
                 scene.preload.apply(scene, Sylx.Scene._argumentsForScene);
 
-            // if no assets need to be loaded, scene can be initialized right away
-            // else, the main loop will load assets one at a time
-            if (Sylx.Asset._isPreloading) {
+            // if resources were set to be loaded during the preload method, set it here to wait
+            if (Sylx.Resource.isLoading())
                 loading = true;
-            } else {
+            else
                 initScene();
-            }
 
             // clear scheduled scene
             Sylx.Scene._scheduledSceneToSet = null;
@@ -314,13 +312,12 @@
 
         // run loading logic
         if (loading) {
-            // if no assets left, then we're done loading and we can actually init the scene
-            if (Sylx.Asset._isPreloading === false) {
+            // if done loading resources, proceed with the scene init
+            if (!Sylx.Resource.isLoading()) {
                 loading = false;
                 initScene();
             }
 
-            // fetch one asset to load
         }
 
         // tick count
@@ -434,6 +431,10 @@
 
                 // sprite component - draw
                 if (entity.sprite) Sylx.Component.System.sprite(entity, ctx);
+
+                // if entity has an additional render method, call it here
+                if (typeof entity.render === 'function')
+                    entity.render(ctx);
             }
 
             // debug data
@@ -474,7 +475,7 @@
         if (Sylx.Canvas.autoClear) Sylx.Canvas.clearCanvas('buffer');
 
         // loading bar
-        var progress = Sylx.Asset.getProgress();
+        var progress = Sylx.Resource.getProgress() || 0.5;
         var progClr = progress * 255;
         ctx.globalAlpha = 0.5;
         ctx.lineWidth = 1;
