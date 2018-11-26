@@ -11,5 +11,8 @@ examples/
 # Development files
 devel/
 
+# Old source files
+src/old/
+
 # Favicon
 favicon.ico
