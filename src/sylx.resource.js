@@ -12,7 +12,8 @@ window.Sylx.Resource = (function (window, Sylx, undefined) {
     // Private variables
     var resources = {},
         queuedPaths = [],
-        loading = false;
+        loading = false,
+        internalLoad = false;
 
 
 
@@ -29,6 +30,7 @@ window.Sylx.Resource = (function (window, Sylx, undefined) {
         if (allLoaded) {
             // important: set loading before calling resolve(), in case resolution involves loading more resources
             loading = false;
+            internalLoad = false;
             if (typeof resolve === "function") resolve();
         }
     }
@@ -49,6 +51,7 @@ window.Sylx.Resource = (function (window, Sylx, undefined) {
         if (queuedPaths.length === 0) {
             // important: set loading before calling resolve(), in case resolution involves loading more resources
             loading = false;
+            internalLoad = false;
             if (typeof resolve === "function") resolve();
         }
     }
@@ -96,7 +99,8 @@ window.Sylx.Resource = (function (window, Sylx, undefined) {
             this.data.src = this.path;
             this.data.onload = (function () {
                 this.loaded = true;
-                if (resolve) resolve(this.data);
+                if (!internalLoad) loading = false;
+                if (typeof resolve === "function") resolve(this.data);
             }).bind(this);
         },
         /**
@@ -118,7 +122,8 @@ window.Sylx.Resource = (function (window, Sylx, undefined) {
                 if (status === 200) {
                     this.data = response;
                     this.loaded = true;
-                    resolve(response);
+                    if (!internalLoad) loading = false;
+                    if (typeof resolve === "function") resolve(response);
                 } else {
                     reject(response);
                     throw ("JSON asset " + this.path + " failed to load!", response);
@@ -137,13 +142,23 @@ window.Sylx.Resource = (function (window, Sylx, undefined) {
         load: function (resolve, reject) {
             // load logic - do nothing if object is loaded already
             if (this.loaded) return this;
+            
+            // check for external loading (called from outside Resources object)
+            if (!internalLoad) {
+                if (loading) return this;
+                loading = true;
+            }
 
             // get resource type
             var resType = getResourceTypeFromPath(this.path);
-            if (loadResource[resType]) loadResource[resType].call(this, resolve, reject);
-            else throw ("Unknown or unsupported resource type.");
+            if (loadResource[resType])
+                loadResource[resType].call(this, resolve, reject);
+            else
+                throw ("Unknown or unsupported resource type.");
 
+            return this;
         }
+
     };
 
 
@@ -177,6 +192,7 @@ window.Sylx.Resource = (function (window, Sylx, undefined) {
             // do nothing if there is a loading taking place already
             if (loading) return null;
             loading = true;
+            internalLoad = true;
 
             // iterate and call all load methods
             for (var key in resources) {
@@ -224,6 +240,7 @@ window.Sylx.Resource = (function (window, Sylx, undefined) {
 
             if (loading) return null;
             loading = true;
+            internalLoad = true;
 
             for (var index in queuedPaths) {
                 var path = queuedPaths[index];
