@@ -159,8 +159,6 @@ window.Sylx.Canvas = (function (window, Sylx, undefined) {
                 $canvas.scale = props.scale;
             }
             
-            console.log(canvasCollection);
-            
             return newCanvas;
         },
         /**
