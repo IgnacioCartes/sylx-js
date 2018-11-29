@@ -399,12 +399,13 @@
      */
     function renderFrame() {
         // get context
-        var ctx = Sylx.Canvas.getContext('buffer');
+        var buffer = Sylx.Canvas.get('buffer');
+        var ctx = buffer.context;
 
         ctx.globalAlpha = 1.0;
 
         // clear
-        if (Sylx.Canvas.autoClear) Sylx.Canvas.clearCanvas('buffer');
+        if (Sylx.Canvas.autoClear) buffer.clear();
 
         if (scene) {
 
@@ -415,7 +416,7 @@
             // render maps
             if (scene.maps)
                 for (var mapIndex = 0; mapIndex < scene.maps.length; mapIndex++)
-                    Sylx.Map._render(scene.maps[mapIndex], ctx);
+                    Sylx.Map.render(scene.maps[mapIndex], ctx);
 
             // sort entities
             scene.entities.sort(function (a, b) {
@@ -454,12 +455,12 @@
 
         // set opacity from scene if it exists
         if (typeof scene.opacity === 'number')
-            Sylx.Canvas.getContext('main').globalAlpha = scene.opacity;
+            Sylx.Canvas.get('main').context.globalAlpha = scene.opacity;
         else
-            Sylx.Canvas.getContext('main').globalAlpha = 1.0;
+            Sylx.Canvas.get('main').context.globalAlpha = 1.0;
 
         // copy to main canvas
-        if (Sylx.Canvas.autoCopy) Sylx.Canvas.copy();
+        if (Sylx.Canvas.autoCopy) Sylx.Canvas.copyMain();
     }
 
 
@@ -469,10 +470,10 @@
      */
     function renderLoading() {
         // get context
-        var ctx = Sylx.Canvas.getContext('buffer');
+        var ctx = Sylx.Canvas.get('buffer').context;
 
         // clear
-        if (Sylx.Canvas.autoClear) Sylx.Canvas.clearCanvas('buffer');
+        if (Sylx.Canvas.autoClear) Sylx.Canvas.get('buffer').clear();
 
         // loading bar
         var progress = Sylx.Resource.getProgress() || 0.5;
@@ -485,7 +486,7 @@
         ctx.fillRect(0, Sylx.Canvas.height - 2, (Sylx.Canvas.width) * progress, 2);
 
         // copy to main canvas
-        if (Sylx.Canvas.autoCopy) Sylx.Canvas.copy();
+        if (Sylx.Canvas.autoCopy) Sylx.Canvas.copyMain();
 
     }
 

@@ -74,7 +74,7 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
         // create prerender canvas
         var prerenderCanvasWidth = prerender.tilesPerRow * map.tileSize.x;
         var prerenderCanvasHeight = prerender.tilesPerCol * map.tileSize.y;
-        prerender.canvas = Sylx.Canvas._createCanvas(prerenderCanvasWidth, prerenderCanvasHeight, 1);
+        prerender.canvas = Sylx.Canvas.create(prerenderCanvasWidth, prerenderCanvasHeight);
         prerender.topLeft = new Sylx.Point(0, 0);
         map.prerender = prerender;
     }
@@ -186,7 +186,7 @@ window.Sylx.Map = (function (window, Sylx, undefined) {
          * @param {object} map The map object to render
          * @param {object} ctx Canvas context to render to
          */
-        _render: function (map, ctx) {
+        render: function (map, ctx) {
             // validate tileset data
             if (!map.tileset || !map.tileSize) return null;
 
