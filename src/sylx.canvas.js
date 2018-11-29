@@ -6,131 +6,81 @@
  */
 window.Sylx.Canvas = (function (window, Sylx, undefined) {
     'use strict';
-
-
-
+    
+    
+    
     // Private variables
-
-    var width, height, scale;
-    var canvasCollection = {};
-
-
-
-    // Exportable object
-
-    var $canvas = {
-        /**
-         * Creates the main canvas to run the game
-         * @param   {object}   props - Object containing properties to create the canvas
-         */
-        create: function (props) {
-            // create should only be ran once
-            if (canvasCollection.main) {
-                console.warn("$display.create should only be called once.");
-                return null;
-            }
-
-            // get variables from props
-            width = props.width || 320;
-            height = props.height || 240;
-            scale = props.scale || 1;
-
-            // create canvas objects - main and buffer
-            canvasCollection.main = setScaling(this._createCanvas(width, height, scale));
-            canvasCollection.buffer = this._createCanvas(width, height, 1);
-
-            // append
-            appendTo(props.appendTo || document.body, canvasCollection.main.element);
-
-            // set properties
-            this.width = width;
-            this.height = height;
-            this.scale = scale;
-        },
-        /**
-         * Gets the context of the specified canvas
-         * @param   {string} canvasName - The canvas name
-         * @returns {object} The canvas context if it exists
-         */
-        getContext: function (canvasName) {
-            if (canvasCollection[canvasName]) {
-                return canvasCollection[canvasName].context;
-            } else {
-                return null;
-            }
-        },
+    
+    var canvasCollection = {
+        main: null,
+        buffer: null
+    };
+    
+    
+    
+    // Canvas prototype
+    var canvasPrototype = {
         /**
          * Clears the canvas
-         * @param   {string} canvasName - The canvas name
+         * @param   {string} fillColor  An optional fill color
          */
-        clearCanvas: function (canvasName) {
-            if (canvasCollection[canvasName]) {
-                var canvas = canvasCollection[canvasName];
-                //canvas.context.clearRect(0, 0, canvas.width, canvas.height);
-                canvas.context.fillStyle = this.fillColor;
-                canvas.context.fillRect(0, 0, canvas.width, canvas.height);
-            } else {
-                return null;
-            }
+        clear: function(fillColor) {
+            this.context.fillStyle = fillColor || this.fillColor || $canvas.fillColor;
+            this.context.fillRect(0, 0, this.width, this.height);
         },
         /**
-         * Copies the buffer to the main canvas
+         * Copies this canvas to a specified target
+         * @param {object}  targetCanvasObj The target canvas object
+         * @param {boolean} noClearFirst    Whether or not to leave the target canvas uncleared before copying
          */
-        copy: function () {
-            canvasCollection.main.context.clearRect(0, 0, width, height);
-            canvasCollection.main.context.drawImage(canvasCollection.buffer.element, 0, 0);
-        },
-
-        /**
-         * Creates a canvas object
-         * @param   {number} width  - Canvas width
-         * @param   {number} height - Canvas height
-         * @param   {number} scale  - Canvas scale
-         * @returns {object} An object containing all of the canvas properties
-         */
-        _createCanvas: function (width, height, scale) {
-            // create the new canvas object
-            var newCanvasObject = {
-                element: window.document.createElement('canvas'),
-                width: width,
-                height: height,
-                scale: scale
-            };
-
-            // set properties
-            newCanvasObject.context = newCanvasObject.element.getContext('2d');
-
-            newCanvasObject.element.width = width;
-            newCanvasObject.element.height = height;
-
-            newCanvasObject.context.fillStyle = $canvas.fillColor;
-            newCanvasObject.context.imageSmoothingEnabled = false;
-            newCanvasObject.context.mozImageSmoothingEnabled = false;
-            newCanvasObject.context.oImageSmoothingEnabled = false;
-            newCanvasObject.context.webkitImageSmoothingEnabled = false;
-            newCanvasObject.context.msImageSmoothingEnabled = false;
-
-            // return object
-            return newCanvasObject;
-        },
-        autoClear: true,
-        autoCopy: true,
-        fillColor: '#000000',
-        width: null,
-        height: null,
-        scale: null,
-        offset: {
-            x: 0,
-            y: 0
+        copyTo: function(targetCanvasObj, noClearFirst) {
+            if (!noClearFirst)
+                targetCanvasObj.context.clearRect(0, 0, targetCanvasObj.width, targetCanvasObj.height);
+            targetCanvasObj.context.drawImage(this.element, 0, 0);
         }
     };
-
+    
 
 
     // Private methods
+    
+    /**
+     * Creates a canvas object
+     * @param   {number} width  - Canvas width
+     * @param   {number} height - Canvas height
+     * @param   {number} scale  - Canvas scale
+     * @returns {object} An object containing all of the canvas properties
+     */
+    function createCanvasObject(width, height, scale) {
+        // create the new canvas object
+        var newCanvasObject = Object.assign(Object.create(canvasPrototype), {
+            element: window.document.createElement('canvas'),
+            width: width,
+            height: height,
+            scale: scale
+        });
 
+        // set other properties
+        newCanvasObject.context = newCanvasObject.element.getContext('2d');
 
+        newCanvasObject.element.width = width;
+        newCanvasObject.element.height = height;
 
+        newCanvasObject.context.fillStyle = $canvas.fillColor;
+        newCanvasObject.context.imageSmoothingEnabled = false;
+        newCanvasObject.context.mozImageSmoothingEnabled = false;
+        newCanvasObject.context.oImageSmoothingEnabled = false;
+        newCanvasObject.context.webkitImageSmoothingEnabled = false;
+        newCanvasObject.context.msImageSmoothingEnabled = false;
+        
+        newCanvasObject.offset = new Sylx.Point();
+
+        // return object
+        return newCanvasObject;
+    }
+
+    
+    
     /**
      * Sets the scaling of the provided canvas object
      * @param   {object}   canvasObject - The canvas object
@@ -156,7 +106,7 @@ window.Sylx.Canvas = (function (window, Sylx, undefined) {
         return canvasObject;
 
     }
-
+    
 
 
     /**
@@ -179,9 +129,68 @@ window.Sylx.Canvas = (function (window, Sylx, undefined) {
 
         el.appendChild(canvas);
     }
+    
+    
+    
+    // Exportable object
 
+    var $canvas = {
+        create: function(width, height, props) {
+            // Width and Height must be provided
+            if (!width && !height) throw("Must provide dimensions for canvas!");
+            props = props || {};
+            props.scale = props.scale || 1;
+            
+            // create canvas
+            var newCanvas = setScaling(createCanvasObject(width, height, props.scale));
+            
+            // check if this is meant to be main canvas
+            if (props.isMain && !canvasCollection.main) {
+                // set as main, create a buffer
+                canvasCollection.main = newCanvas;
+                canvasCollection.buffer = createCanvasObject(width, height, 1);
+                
+                // append
+                appendTo(props.appendTo || document.body, newCanvas.element);
+                
+                // set properties
+                $canvas.width = width;
+                $canvas.height = height;
+                $canvas.scale = props.scale;
+            }
+            
+            console.log(canvasCollection);
+            
+            return newCanvas;
+        },
+        /**
+         * Gets a stored canvas by name
+         * @param   {string} canvasName Name of the canvas
+         * @returns {object} A canvas object
+         */
+        get: function(canvasName) {
+            if (canvasCollection[canvasName]) return canvasCollection[canvasName];
+        },
+        /**
+         * Copies the buffer to the main canvas
+         */
+        copyMain: function() {
+            /*
+            canvasCollection.main.context.clearRect(0, 0, canvasCollection.main.width, canvasCollection.main.height);
+            canvasCollection.main.context.drawImage(canvasCollection.buffer.element, 0, 0);
+            */
+            canvasCollection.buffer.copyTo(canvasCollection.main);
+        },
+        autoClear: true,
+        autoCopy: true,
+        fillColor: '#000000',
+        width: null,
+        height: null,
+        scale: null
+    };
 
-
+    
+    
     // Export
     return $canvas;
 
