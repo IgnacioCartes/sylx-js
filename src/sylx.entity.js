@@ -160,7 +160,7 @@ window.Sylx.Entity = (function (window, Sylx, undefined) {
             // leave inmediately if there's no entities to be killed
             if (entityKillQueue.length === 0) return;
             // iterate through the kill queue
-            for (var index = 0, len = entityKillQueue.length; index < len; index++) {
+            for (var index = entityKillQueue.length - 1; index >= 0; index--) {
                 // get where is the entity to kill
                 var indexInPool = pool.indexOf(entityKillQueue[index]);
                 // give entity an opportunity to say goodbye
@@ -168,9 +168,9 @@ window.Sylx.Entity = (function (window, Sylx, undefined) {
                     entityKillQueue[index].exit();
                 // cya entity
                 pool.splice(indexInPool, 1);
+                entityKillQueue.splice(index, 1);
             }
             // cleanup queue
-            entityKillQueue = [];
             return pool;
         }
     };
