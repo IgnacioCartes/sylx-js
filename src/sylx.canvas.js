@@ -173,10 +173,6 @@ window.Sylx.Canvas = (function (window, Sylx, undefined) {
          * Copies the buffer to the main canvas
          */
         copyMain: function() {
-            /*
-            canvasCollection.main.context.clearRect(0, 0, canvasCollection.main.width, canvasCollection.main.height);
-            canvasCollection.main.context.drawImage(canvasCollection.buffer.element, 0, 0);
-            */
             canvasCollection.buffer.copyTo(canvasCollection.main);
         },
         autoClear: true,
