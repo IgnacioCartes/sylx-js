@@ -470,10 +470,11 @@
      */
     function renderLoading() {
         // get context
-        var ctx = Sylx.Canvas.get('buffer').context;
+        var buffer = Sylx.Canvas.get('buffer');
+        var ctx = buffer.context;
 
         // clear
-        if (Sylx.Canvas.autoClear) Sylx.Canvas.get('buffer').clear();
+        if (Sylx.Canvas.autoClear) buffer.clear();
 
         // loading bar
         var progress = Sylx.Resource.getProgress() || 0.5;
