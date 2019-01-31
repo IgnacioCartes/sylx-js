@@ -31,6 +31,12 @@
         // Modules, where user modules are kept until they're fully loaded and initialized
         modules = {},
 
+        // Module Loading process is running
+        moduleLoadingProcess = false,
+
+        // first run callback method
+        runCallback = function () {},
+
         // Dependencies queue - used during loading to ensure modules are loaded in the right order
         dependenciesQueue = {},
 
@@ -71,6 +77,12 @@
          */
         module: function (name, dependencies, body) {
             if (running) throw ("Cannot add/overwrite modules when the game system is running!");
+
+            // set variable
+            if (!moduleLoadingProcess) {
+                moduleLoadingProcess = true;
+                window.addEventListener('load', checkFoldersForMissingDependencies, false);
+            }
 
             // Create new module
             modules[name] = {
@@ -115,25 +127,25 @@
             this.y = parseInt(y) || 0;
         },
         /**
-         * Runs the game once the document is ready
+         * Sets the run callback function to be executed once the game is ready
          * @param {function} callback - Function to be called when the game is ready to run
          */
         run: function run(callback) {
+            runCallback = callback;
             // check document state
-            if (window.document.readyState === 'complete') {
-                // run game inmediately
-                callFirstFrame(callback);
-            } else {
-                // else wait for document to load
-                window.addEventListener('load', callFirstFrame.bind(this, callback), false);
-            }
+            //if (window.document.readyState === 'complete') {
+            // run game inmediately
+            //callFirstFrame(callback);
+            //} else {
+            // else wait for document to load
+            //window.addEventListener('load', callFirstFrame.bind(this, callback), false);
+            //}
         },
         /**
          * Sylx log - only when verbose is set to true
          */
         log: function log() {
-            if (this.verbose)
-                console.log.apply(null, arguments);
+            if (this.verbose) console.log.apply(null, arguments);
         },
         VERSION: 5,
         verbose: verbose || false
@@ -205,7 +217,12 @@
             var moduleArgs = [];
             if (module.dependencies.length) {
                 for (index = 0; index < module.dependencies.length; index++) {
-                    moduleArgs.push(modules[module.dependencies[index]].body);
+                    // content module?
+                    var dependency = modules[module.dependencies[index]];
+                    if (dependency.contents)
+                        moduleArgs.push(dependency.contents);
+                    else
+                        moduleArgs.push(dependency.body);
                 }
             }
             module.body = module.body.apply(environment, moduleArgs) || {};
@@ -222,14 +239,25 @@
         // determine namespacing and store new module
         var split = module.name.split('.');
         var parent = environment;
+        var path = '',
+            parentPath = '';
         for (index = 0; index < split.length; index++) {
             var current = split[index];
+            path += current;
             if (parseInt(index) === (split.length - 1)) {
                 parent[current] = envModule;
+                if (parentPath && modules[parentPath])
+                    modules[parentPath].contents[current] = envModule;
             } else {
+                // Create new content module (folder) if needed
+                modules[path] = modules[path] || {
+                    contents: {}
+                };
                 parent[current] = parent[current] || {};
                 parent = parent[current];
             }
+            parentPath = path;
+            path += '.';
         }
 
         // execute the onload method if it exists and is a function
@@ -245,6 +273,48 @@
                 checkForDependencies(modules[dependenciesQueue[module.name][index]], module.name);
             }
         }
+    }
+
+
+
+    /**
+     * Checks all folders for dependencies that might need to be added still
+     */
+    function checkFoldersForMissingDependencies() {
+        if (areThereMissingDependencies()) {
+            Sylx.log("Sylx: Checking content folders for missing dependencies");
+            Object.keys(modules).forEach(function (name) {
+                // Find "content" modules (folders)
+                var module = modules[name];
+                if (module.contents) {
+                    // flag content modules as loaded now
+                    module.loaded = true;
+                    if (dependenciesQueue[name]) {
+                        // iterate through dependencies backwards
+                        for (var index = dependenciesQueue[name].length - 1; index >= 0; index--) {
+                            checkForDependencies(modules[dependenciesQueue[name][index]], name);
+                        }
+                    }
+                }
+            });
+            if (areThereMissingDependencies()) throw ("UNRESOLVED DEPENDENCIES!");
+        }
+        Sylx.log("Sylx: All modules loaded successfully!");
+        callFirstFrame.call(Sylx, runCallback);
+    }
+
+
+
+    /**
+     * Checks if there are any modules that are awaiting for their dependencies
+     * @returns {boolean} The answer
+     */
+    function areThereMissingDependencies() {
+        var result = false;
+        Object.keys(dependenciesQueue).forEach(function (dep) {
+            if (dependenciesQueue[dep].length) result = true;
+        });
+        return result;
     }
 
 
