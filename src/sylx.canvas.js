@@ -6,26 +6,23 @@
  */
 window.Sylx.Canvas = (function (window, Sylx, undefined) {
     'use strict';
-    
-    
-    
+
+
+
     // Private variables
-    
-    var canvasCollection = {
-        main: null,
-        buffer: null
-    };
-    
-    
-    
+
+    var canvasCollection = {};
+
+
+
     // Canvas prototype
     var canvasPrototype = {
         /**
          * Clears the canvas
          * @param   {string} fillColor  An optional fill color
          */
-        clear: function(fillColor) {
-            this.context.fillStyle = fillColor || this.fillColor || $canvas.fillColor;
+        clear: function (fillColor) {
+            this.context.fillStyle = fillColor || this.fillColor || $canvas.fillColor;
             this.context.fillRect(0, 0, this.width, this.height);
         },
         /**
@@ -33,17 +30,17 @@ window.Sylx.Canvas = (function (window, Sylx, undefined) {
          * @param {object}  targetCanvasObj The target canvas object
          * @param {boolean} noClearFirst    Whether or not to leave the target canvas uncleared before copying
          */
-        copyTo: function(targetCanvasObj, noClearFirst) {
+        copyTo: function (targetCanvasObj, noClearFirst) {
             if (!noClearFirst)
                 targetCanvasObj.context.clearRect(0, 0, targetCanvasObj.width, targetCanvasObj.height);
             targetCanvasObj.context.drawImage(this.element, 0, 0);
         }
     };
-    
+
 
 
     // Private methods
-    
+
     /**
      * Creates a canvas object
      * @param   {number} width  - Canvas width
@@ -72,15 +69,15 @@ window.Sylx.Canvas = (function (window, Sylx, undefined) {
         newCanvasObject.context.oImageSmoothingEnabled = false;
         newCanvasObject.context.webkitImageSmoothingEnabled = false;
         newCanvasObject.context.msImageSmoothingEnabled = false;
-        
+
         newCanvasObject.offset = new Sylx.Point();
 
         // return object
         return newCanvasObject;
     }
 
-    
-    
+
+
     /**
      * Sets the scaling of the provided canvas object
      * @param   {object}   canvasObject - The canvas object
@@ -106,7 +103,7 @@ window.Sylx.Canvas = (function (window, Sylx, undefined) {
         return canvasObject;
 
     }
-    
+
 
 
     /**
@@ -129,36 +126,35 @@ window.Sylx.Canvas = (function (window, Sylx, undefined) {
 
         el.appendChild(canvas);
     }
-    
-    
-    
+
+
+
     // Exportable object
 
     var $canvas = {
-        create: function(width, height, props) {
+        create: function (width, height, props) {
             // Width and Height must be provided
-            if (!width && !height) throw("Must provide dimensions for canvas!");
+            if (!width && !height) throw ("Must provide dimensions for canvas!");
             props = props || {};
             props.scale = props.scale || 1;
-            
+
             // create canvas
             var newCanvas = setScaling(createCanvasObject(width, height, props.scale));
-            
+
             // check if this is meant to be main canvas
             if (props.isMain && !canvasCollection.main) {
                 // set as main, create a buffer
                 canvasCollection.main = newCanvas;
                 canvasCollection.buffer = createCanvasObject(width, height, 1);
-                
+
                 // append
                 appendTo(props.appendTo || document.body, newCanvas.element);
-                
+
                 // set properties
                 $canvas.width = width;
                 $canvas.height = height;
                 $canvas.scale = props.scale;
             }
-            
             return newCanvas;
         },
         /**
@@ -166,13 +162,13 @@ window.Sylx.Canvas = (function (window, Sylx, undefined) {
          * @param   {string} canvasName Name of the canvas
          * @returns {object} A canvas object
          */
-        get: function(canvasName) {
+        get: function (canvasName) {
             if (canvasCollection[canvasName]) return canvasCollection[canvasName];
         },
         /**
          * Copies the buffer to the main canvas
          */
-        copyMain: function() {
+        copyMain: function () {
             canvasCollection.buffer.copyTo(canvasCollection.main);
         },
         autoClear: true,
@@ -183,8 +179,8 @@ window.Sylx.Canvas = (function (window, Sylx, undefined) {
         scale: null
     };
 
-    
-    
+
+
     // Export
     return $canvas;
 
